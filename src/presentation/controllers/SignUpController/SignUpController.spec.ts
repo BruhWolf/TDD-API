@@ -147,3 +147,10 @@ test ('should return 500 if CreateAccount throws an Error', () => {
   expect(httpResponse.statusCode).toBe(500)
   expect(httpResponse.body).toEqual(new InternalServerError())
 })
+
+  test('should return 200 if valid data is provided', () => {
+    const httpRequest = { body: AccountBuilder.anAccount() }
+    const httpResponse = signUpController.handle(httpRequest)
+    expect(httpResponse.statusCode).toBe(201)
+    expect(httpResponse.body).toEqual(AccountBuilder.typeAccountModel())
+  })
