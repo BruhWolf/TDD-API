@@ -1,6 +1,7 @@
 import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../../errors'
 import { EmailValidator,AccountModel,CreateAccount  } from './SignUpProtocols'
 import { SignUpController } from './SignUpController'
+import { serverError } from '../../helpers/httpResponse.helper'
 
 
 class AccountBuilder {
@@ -137,4 +138,12 @@ test('should call CreateAccount with correct data', () => {
   const {name, email, password} = httpRequest.body
   signUpController.handle(httpRequest)
   expect(spy).toBeCalledWith({name, email, password})
+})
+
+test ('should return 500 if CreateAccount throws an Error', () => {
+  jest.spyOn(createAccountStub, 'create').mockImplementationOnce(()=>{throw new Error('Unknow error')})
+  const httpRequest = {  body: AccountBuilder.anAccount()  }
+  const httpResponse = signUpController.handle(httpRequest)
+  expect(httpResponse.statusCode).toBe(500)
+  expect(httpResponse.body).toEqual(new InternalServerError())
 })
