@@ -1,12 +1,15 @@
 import { MissingFieldsError } from '../errors/MissingFieldsError'
+import { PasswordConfirmationError } from '../errors/PasswordConfirmationError'
 import { SignUpController } from './SignUpController'
+
+const makeSut = (): SignUpController => new SignUpController()
+
 
 describe('SignUpController', () => {
 })
 
-
 test('should return 400 if no name is provided', () => {
-  const sut = new SignUpController()
+  const sut = makeSut()
   const httpRequest = {
     body: {
       email: 'teste@teste.com',
@@ -21,7 +24,7 @@ test('should return 400 if no name is provided', () => {
 })
 
 test('should return 400 if no email is provided', () => {
-  const sut = new SignUpController()
+  const sut = makeSut()
   const httpRequest = {
     body: {
       name: 'teste',
@@ -35,7 +38,7 @@ test('should return 400 if no email is provided', () => {
 })
 
 test('should return 400 if no password is provided', () => {
-  const sut = new SignUpController()
+  const sut = makeSut()
   const httpRequest = {
     body: {
       name: 'teste',
@@ -49,7 +52,7 @@ test('should return 400 if no password is provided', () => {
 })
 
 test('should return 400 if no passwordConfirmation is provided', () => {
-  const sut = new SignUpController()
+  const sut = makeSut()
   const httpRequest = {
     body: {
       name: 'teste',
