@@ -1,3 +1,4 @@
+import { InternalServerError } from '../errors/InternalServerError'
 import { InvalidFieldsError } from '../errors/InvalidFieldsError'
 import { MissingFieldsError } from '../errors/MissingFieldsError'
 import { PasswordConfirmationError } from '../errors/PasswordConfirmationError'
@@ -114,4 +115,28 @@ test('should return 400 if a invalid email is provided', () => {
   const httpResponse = sut.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new InvalidFieldsError('email'))
+})
+
+test('should return 500 if EmailValidator throws any error', () => {
+
+  class EmailValidatorStub implements EmailValidator{
+    isValid(){
+      throw new Error()
+      return true
+    }
+  }
+  const emailValidatorStub = new EmailValidatorStub()
+  const sut = new SignUpController(emailValidatorStub)
+  jest.spyOn(emailValidatorStub, 'isValid').mockReturnValue(false)
+  const httpRequest = {
+    body: {
+      name: 'teste',
+      email: 'test@teste.com',
+      password: '1234',
+      passwordConfirmation: '1234'
+    }
+  }
+  const httpResponse = sut.handle(httpRequest)
+  expect(httpResponse.statusCode).toBe(500)
+  expect(httpResponse.body).toEqual(new InternalServerError())
 })
