@@ -64,3 +64,19 @@ test('should return 400 if no passwordConfirmation is provided', () => {
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new MissingFieldsError('passwordConfirmation'))
 })
+
+
+test('should return 400 if password is not equal to passwordConfirmation', () => {
+  const sut = makeSut()
+  const httpRequest = {
+    body: {
+      name: 'teste',
+      password: '1234',
+      email: 'teste@teste.com',
+      passwordConfirmation: '123',
+    }
+  }
+  const httpResponse = sut.handle(httpRequest)
+  expect(httpResponse.statusCode).toBe(400)
+  expect(httpResponse.body).toEqual(new PasswordConfirmationError())
+})
