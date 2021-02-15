@@ -6,8 +6,8 @@ import {MissingFieldsError,PasswordConfirmationError,InvalidFieldsError} from '.
 export class SignUpController implements Controller {
   constructor(private readonly emailValidator: EmailValidator){}
   handle (httpRequest: HttpRequest): HttpResponse {
+    const requiredFields = ['name','email','password','passwordConfirmation']
     try{
-      const requiredFields = ['name','email','password','passwordConfirmation']
       for(const field of requiredFields){
         if (!httpRequest.body[field]){
           return badRequest(new MissingFieldsError(field))
@@ -20,7 +20,6 @@ export class SignUpController implements Controller {
         return badRequest( new InvalidFieldsError('email'))
       }
     }catch(err){
-      console.error(err)
       return serverError()
     }
   }
