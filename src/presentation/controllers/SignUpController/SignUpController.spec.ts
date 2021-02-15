@@ -1,7 +1,5 @@
-import { AccountModel } from '../../domain/models/AccountModel'
-import { CreateAccount } from '../../domain/use_cases/createAccount/createAccount'
-import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../errors'
-import { EmailValidator } from '../protocols/emailValidator'
+import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../../errors'
+import { EmailValidator,AccountModel,CreateAccount  } from './SignUpProtocols'
 import { SignUpController } from './SignUpController'
 
 

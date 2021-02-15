@@ -1,8 +1,6 @@
-import {HttpRequest,HttpResponse,Controller,EmailValidator} from '../protocols'
-import {badRequest,serverError} from '../helpers/httpResponse.helper'
-import {MissingFieldsError,PasswordConfirmationError,InvalidFieldsError} from '../errors'
-import {AccountModel} from '../../domain/models/AccountModel'
-import {CreateAccount} from '../../domain/use_cases/createAccount/createAccount'
+import {HttpRequest,HttpResponse,Controller,EmailValidator,CreateAccount} from './SignUpProtocols'
+import {badRequest,serverError} from '../../helpers/httpResponse.helper'
+import {MissingFieldsError,PasswordConfirmationError,InvalidFieldsError} from '../../errors'
 
 
 export class SignUpController implements Controller {
