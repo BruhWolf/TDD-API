@@ -1,13 +1,10 @@
+import { AccountModel } from '../../domain/models/AccountModel'
+import { CreateAccount } from '../../domain/use_cases/createAccount/createAccount'
 import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../errors'
 import { EmailValidator } from '../protocols/emailValidator'
 import { SignUpController } from './SignUpController'
 
 
-class EmailValidatorStub implements EmailValidator{
-  isValid(email:string){
-    return true
-  }
-}
 class AccountBuilder {
     public name?:string ='teste'
     public email?:string = 'teste@teste.com'
@@ -47,10 +44,29 @@ class AccountBuilder {
    this.email = 'InvalidEmail'
    return this
   }
+  
+  public static typeAccountModel(): AccountModel{
+    return {
+      id: 'validID',
+      name: 'teste',
+      email: 'teste@teste.com',
+      password: '1234'
+    }
+  }
 }
-
+class EmailValidatorStub implements EmailValidator{
+  isValid(email:string){
+    return true
+  }
+}
+class CreateAccountStub implements CreateAccount{
+  create(): AccountModel{
+    return AccountBuilder.typeAccountModel()
+  }
+}
+const createAccountStub = new CreateAccountStub()
 const emailValidatorStub =  new EmailValidatorStub()
-const signUpController = new SignUpController( emailValidatorStub)
+const signUpController = new SignUpController( emailValidatorStub,createAccountStub)
 
 
 describe('SignUpController', () => {
@@ -115,4 +131,12 @@ test('should return 500 if EmailValidator throws any error', () => {
   const httpResponse = signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(500)
   expect(httpResponse.body).toEqual(new InternalServerError())
+})
+
+test('should call CreateAccount with correct data', () => {
+  const spy = jest.spyOn(createAccountStub, 'create')
+  const httpRequest = {  body: AccountBuilder.anAccount() }
+  const {name, email, password} = httpRequest.body
+  signUpController.handle(httpRequest)
+  expect(spy).toBeCalledWith({name, email, password})
 })
