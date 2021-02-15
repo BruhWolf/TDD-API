@@ -1,5 +1,4 @@
-import { InternalServerError } from '../errors/InternalServerError'
-import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError } from '../errors'
+import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../errors'
 import { EmailValidator } from '../protocols/emailValidator'
 import { SignUpController } from './SignUpController'
 
