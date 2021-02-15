@@ -25,7 +25,10 @@ export class SignUpController implements Controller {
         if (password !== passwordConfirmation){
           return badRequest( new PasswordConfirmationError())
         }
-        this.createAccount.create({name, email, password})
+        return {
+          statusCode: 201,
+          body: this.createAccount.create({name, email, password})
+        }
     }catch(err){
       return serverError()
     }
