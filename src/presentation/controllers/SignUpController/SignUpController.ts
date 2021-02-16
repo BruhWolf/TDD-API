@@ -10,7 +10,7 @@ export class SignUpController implements Controller {
     private readonly createAccount: CreateAccount
     ){}
 
-  handle (httpRequest: HttpRequest): HttpResponse {
+  async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
     const requiredFields = ['name','email','password','passwordConfirmation']
     try{
         for(const field of requiredFields){
@@ -19,15 +19,16 @@ export class SignUpController implements Controller {
           }
         }
         const {name, email, password, passwordConfirmation} = httpRequest.body
-        if(!this.emailValidator.isValid(email)){
+        if(!await this.emailValidator.isValid(email)){
           return badRequest( new InvalidFieldsError('email'))
         }
         if (password !== passwordConfirmation){
           return badRequest( new PasswordConfirmationError())
         }
+        const res = await this.createAccount.create({name, email, password})
         return {
           statusCode: 201,
-          body: this.createAccount.create({name, email, password})
+          body: res
         }
     }catch(err){
       return serverError()

@@ -1,7 +1,6 @@
 import { InvalidFieldsError, MissingFieldsError, PasswordConfirmationError, InternalServerError } from '../../errors'
 import { EmailValidator,AccountModel,CreateAccount  } from './SignUpProtocols'
 import { SignUpController } from './SignUpController'
-import { serverError } from '../../helpers/httpResponse.helper'
 
 
 class AccountBuilder {
@@ -54,13 +53,13 @@ class AccountBuilder {
   }
 }
 class EmailValidatorStub implements EmailValidator{
-  isValid(email:string){
-    return true
+  async isValid(email:string): Promise<boolean>{
+    return await new Promise( resolve => resolve(true))
   }
 }
 class CreateAccountStub implements CreateAccount{
-  create(): AccountModel{
-    return AccountBuilder.typeAccountModel()
+  async create(): Promise<AccountModel>{
+    return await new Promise( resolve => resolve(AccountBuilder.typeAccountModel()))
   }
 }
 const createAccountStub = new CreateAccountStub()
@@ -71,86 +70,87 @@ const signUpController = new SignUpController( emailValidatorStub,createAccountS
 describe('SignUpController', () => {
 })
 
-test('should return 400 if no name is provided', () => {
+test('should return 400 if no name is provided', async () => {
   const httpRequest = {  body: AccountBuilder.anAccount().withNoName()  }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new MissingFieldsError('name'))
 })
 
-test('should return 400 if no email is provided', () => {
+test('should return 400 if no email is provided', async () => {
   const httpRequest = { body: AccountBuilder.anAccount().withNoEmail() }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new MissingFieldsError('email'))
 })
 
-test('should return 400 if no password is provided', () => {
+test('should return 400 if no password is provided', async () => {
   const httpRequest = {  body: AccountBuilder.anAccount().withNoPassword() }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new MissingFieldsError('password'))
 })
 
-test('should return 400 if no passwordConfirmation is provided', () => {
+test('should return 400 if no passwordConfirmation is provided', async () => {
   const httpRequest = { body: AccountBuilder.anAccount().withNoPasswordConfirmation() }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new MissingFieldsError('passwordConfirmation'))
 })
 
-test('should return 400 if password confirmation fails', () => {
+test('should return 400 if password confirmation fails', async () => {
   const httpRequest = { body: AccountBuilder.anAccount().withWrongPasswordConfirmation() }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new PasswordConfirmationError())
 })
 
-test('should return 400 if a invalid email is provided', () => {
+test('should return 400 if a invalid email is provided', async () => {
   jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(false)
-  const httpRequest = {
-    body: AccountBuilder.anAccount().withInvalidEmail()
-  }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpRequest = {  body: AccountBuilder.anAccount().withInvalidEmail()  }
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
   expect(httpResponse.body).toEqual(new InvalidFieldsError('email'))
 })
 
-test('should call emailValidator with correct email', () => {
+test('should call emailValidator with correct email', async () => {
   const isValid = jest.spyOn(emailValidatorStub, 'isValid')
   const body = AccountBuilder.anAccount()
   const httpRequest = { body: body  }
-  signUpController.handle(httpRequest)
+  await signUpController.handle(httpRequest)
   expect(isValid).toBeCalledWith(body.email)
 })
 
-test('should return 500 if EmailValidator throws any error', () => {
-  jest.spyOn(emailValidatorStub, 'isValid').mockImplementationOnce(()=>{throw new Error('Unknow error')})
+test('should return 500 if EmailValidator throws any error', async () => {
+  jest.spyOn(emailValidatorStub, 'isValid').mockImplementationOnce( async () => {
+     return new Promise( (resolve,reject) => reject(new Error('Unknow error')))
+  })
   const httpRequest = { body: AccountBuilder.anAccount()  }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(500)
   expect(httpResponse.body).toEqual(new InternalServerError())
 })
 
-test('should call CreateAccount with correct data', () => {
+test('should call CreateAccount with correct data', async () => {
   const spy = jest.spyOn(createAccountStub, 'create')
   const httpRequest = {  body: AccountBuilder.anAccount() }
   const {name, email, password} = httpRequest.body
-  signUpController.handle(httpRequest)
+  await signUpController.handle(httpRequest)
   expect(spy).toBeCalledWith({name, email, password})
 })
 
-test ('should return 500 if CreateAccount throws an Error', () => {
-  jest.spyOn(createAccountStub, 'create').mockImplementationOnce(()=>{throw new Error('Unknow error')})
+test ('should return 500 if CreateAccount throws an Error', async () => {
+  jest.spyOn(createAccountStub, 'create').mockImplementationOnce( async () => {
+    return new Promise( (resolve, reject) => reject(new Error('Unknow error')))})
   const httpRequest = {  body: AccountBuilder.anAccount()  }
-  const httpResponse = signUpController.handle(httpRequest)
+  const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(500)
   expect(httpResponse.body).toEqual(new InternalServerError())
 })
 
-  test('should return 200 if valid data is provided', () => {
+  test('should return 201 if valid data is provided', async () => {
     const httpRequest = { body: AccountBuilder.anAccount() }
-    const httpResponse = signUpController.handle(httpRequest)
+    const httpResponse = await signUpController.handle(httpRequest)
     expect(httpResponse.statusCode).toBe(201)
     expect(httpResponse.body).toEqual(AccountBuilder.typeAccountModel())
   })
