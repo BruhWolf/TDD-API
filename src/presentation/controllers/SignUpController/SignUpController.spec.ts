@@ -106,7 +106,7 @@ test('should return 400 if password confirmation fails', async () => {
 })
 
 test('should return 400 if a invalid email is provided', async () => {
-  jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(false)
+  jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(new Promise(resolve=>resolve(false)))
   const httpRequest = {  body: AccountBuilder.anAccount().withInvalidEmail()  }
   const httpResponse = await signUpController.handle(httpRequest)
   expect(httpResponse.statusCode).toBe(400)
