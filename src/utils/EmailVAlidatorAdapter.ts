@@ -1,25 +1,13 @@
 import { EmailValidator } from "../presentation/protocols/emailValidator";
+import Joi from "joi";
 
-interface Validator{
-    validate: (email:string)=>Promise<boolean>
-}
-export const validator: Validator = {
-
-    validate: async (email:string): Promise<boolean> => {
-        return new Promise((resolve,reject)=>{
-            const pattern = /\S+@\S+\.\S+/
-            try{
-                const result = pattern.test(email)
-                resolve(result)
-            }catch(error){
-                reject(error)
-            }
-        })
-    }
-}
+export const emailSchema = Joi.string().email().required()
 
 export class EmailValidatorAdapter implements EmailValidator{
-    async isEmail(email:string): Promise<boolean>{
-        const isValid = await validator.validate(email)
-       return isValid
+    async isValid(email:string): Promise<boolean>{
+        const isValid = await emailSchema.validate(email)
+        console.log(isValid)
+        if(isValid.error) return false
+        else return true
+    }
 }
